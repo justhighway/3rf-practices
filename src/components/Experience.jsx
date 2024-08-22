@@ -1,16 +1,42 @@
 /* eslint-disable react/no-unknown-property */
 
-import { Box, Cone, OrbitControls, TorusKnot } from "@react-three/drei";
+import { Box, CameraControls, Cone, TorusKnot } from "@react-three/drei";
 import PortalCard from "./PortalCard";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import MyBox from "./MyBox";
+import * as THREE from "three";
+import { useThree } from "@react-three/fiber";
 
 export default function Experience() {
-  const [active, setActive] = useState(null);
+  const [active, setActive] = useState(null); // 현재 blend된 PortalCard의 text(name)
+  const [hover, setHover] = useState(null);
+  const controlsRef = useRef();
+  const scene = useThree((state) => state.scene);
+
+  useEffect(() => {
+    if (active) {
+      const targetPosition = new THREE.Vector3();
+      scene.getObjectByName(active).getWorldPosition(targetPosition);
+      controlsRef.current.setLookAt(
+        0,
+        0,
+        5,
+        targetPosition.x,
+        targetPosition.y,
+        targetPosition.z,
+        true
+      );
+    } else {
+      controlsRef.current.setLookAt(0, 0, 10, 0, 0, 0, true);
+    }
+  }, [active]);
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <OrbitControls />
+      <ambientLight intensity={2} />
+      <directionalLight position={[3, 5, 5]} />
+      <CameraControls ref={controlsRef} />
+      <MyBox />
       <PortalCard
         texture={"texture/env1.jpg"}
         position-x={-2.5}
